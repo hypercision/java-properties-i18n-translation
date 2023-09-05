@@ -134,3 +134,7 @@ def test_translate_missing_messages_without_sorting(
         output_file_path=str(output_file),
     )
     assert output_file.read_text() == fake_german_i18n_data_unsorted
+
+
+# TODO: add a test case where translate_missing_messages is called
+# with remove_back_slashes=True

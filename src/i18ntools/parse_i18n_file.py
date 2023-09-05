@@ -14,7 +14,7 @@ import argparse
 from pathlib import Path
 
 
-def parse_i18n_file(file_path):
+def parse_i18n_file(file_path, remove_back_slashes=False):
     """Parses an i18n Java properties file and returns the data as a dictionary.
 
     Note that this method does not work properly for multiline translations
@@ -22,6 +22,8 @@ def parse_i18n_file(file_path):
 
     Keyword arguments:
     file_path -- filepath of the i18n Java properties file to parse
+    remove_back_slashes -- when true, the data returned will not have the
+        back slashes used in multiline values.
     """
     if not Path(file_path).exists():
         raise FileNotFoundError("File {0} does not exist".format(file_path), file_path)
@@ -44,11 +46,19 @@ def parse_i18n_file(file_path):
             # This line is part of a multiline value.
             # Add the additional line to the value in our dictionary,
             # stripping the trailing whitespace.
-            data[mostRecentKey] += "\n" + line.rstrip()
+            value = line.rstrip()
+            if remove_back_slashes and value.endswith("\\"):
+                # Remove the trailing back slash from value
+                value = value[:-1]
+            data[mostRecentKey] += "\n" + value
             continue
 
         key = parts[0]
         value = parts[1]
+        if remove_back_slashes and value.endswith("\\"):
+            # Remove the trailing back slash from value
+            value = value[:-1]
+
         if key in data:
             duplicate_keys.add(key)
         data[key] = value
@@ -80,8 +90,17 @@ def main():
             "Can be specified as a relative or absolute file path."
         ),
     )
+    parser.add_argument(
+        "-r",
+        "--remove_back_slashes",
+        action="store_true",
+        help=(
+            "the data returned will not have the "
+            "back slashes used in multiline values."
+        ),
+    )
     args = parser.parse_args()
-    result = parse_i18n_file(args.input_file)
+    result = parse_i18n_file(args.input_file, args.remove_back_slashes)
     for key, value in result.items():
         print("key", key)
         print("value", value)

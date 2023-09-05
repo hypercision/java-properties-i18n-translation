@@ -27,6 +27,7 @@ def translate_missing_messages(
     input_file_path,
     output_lang,
     sort_file=False,
+    remove_back_slashes=False,
     output_file_path=None,
     input_lang=default_lang,
     translator_region=default_region,
@@ -50,7 +51,7 @@ def translate_missing_messages(
         )
 
     # Parse the input file and output file into a dictionary
-    input_data = parse_i18n_file(input_file_path)
+    input_data = parse_i18n_file(input_file_path, remove_back_slashes)
     output_data = parse_i18n_file(output_file_path)
 
     # Find any i18n messages missing from the output file
@@ -152,6 +153,17 @@ def main():
         default=default_region,
         help="region of the Azure translator resource. Defaults to eastus2",
     )
+    # TODO: figure out how to better describe this argument in the help section
+    parser.add_argument(
+        "-rbs",
+        "--remove_back_slashes",
+        action="store_true",
+        help=(
+            "the input file will not have the "
+            "back slashes from multiline values included "
+            "in the text that is translated."
+        ),
+    )
     parser.add_argument(
         "-s",
         "--sort",
@@ -167,6 +179,7 @@ def main():
         args.input_file,
         args.to,
         args.sort,
+        args.remove_back_slashes,
         args.output_file,
         args.from_lang,
         args.region,
